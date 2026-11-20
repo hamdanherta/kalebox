@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+**/node_modules/
+vendor/
+backend/vendor/
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.env
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+
+# Logs & Cache
+*.log
+backend/storage/logs/*.log
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*.php
+
+# IDE & OS
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

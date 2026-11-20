@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Kalebox Application Runner (Bash)
+
+ACTION=${1:-start}
+
+info() { echo -e "\033[1;36m[KALEBOX]\033[0m $1"; }
+success() { echo -e "\033[1;32m[KALEBOX]\033[0m $1"; }
+warn() { echo -e "\033[1;33m[KALEBOX]\033[0m $1"; }
+error() { echo -e "\033[1;31m[KALEBOX ERROR]\033[0m $1"; exit 1; }
+
+command -v php >/dev/null 2>&1 || error "PHP tidak ditemukan di PATH!"
+command -v composer >/dev/null 2>&1 || error "Composer tidak ditemukan di PATH!"
+command -v node >/dev/null 2>&1 || error "Node.js tidak ditemukan di PATH!"
+command -v npm >/dev/null 2>&1 || error "npm tidak ditemukan di PATH!"
+
+if [ ! -f "backend/.env" ]; then
+    info "Menyiapkan backend/.env..."
+    cp "backend/.env.example" "backend/.env"
+fi
+
+if [ ! -d "backend/vendor" ]; then
+    info "Menjalankan composer install..."
+    (cd backend && composer install --no-interaction)
+fi
+
+if [ ! -d "frontend/node_modules" ]; then
+    info "Menjalankan npm install..."
+    (cd frontend && npm install)
+fi
+
+(cd backend && php artisan storage:link --quiet >/dev/null 2>&1 || true)
+
+if [ "$ACTION" == "setup" ]; then
+    info "Menjalankan database migration & seeder..."
+    (cd backend && php artisan migrate --seed --force)
+    success "Setup selesai!"
+    exit 0
+fi
+
+if [ "$ACTION" == "fresh" ]; then
+    warn "Perhatian: Ini akan mereset seluruh database kalebox!"
+    (cd backend && php artisan migrate:fresh --seed --force)
+    success "Database berhasil di-reset dan diisi ulang (fresh seed)."
+    exit 0
+fi
+
+if [ "$ACTION" == "build" ]; then
+    info "Membangun frontend untuk produksi..."
+    (cd frontend && npm run build)
+    success "Build produksi selesai!"
+    exit 0
+fi
+
+(cd backend && php artisan migrate --force --quiet)
+
+echo -e "\033[1;35m==========================================================\033[0m"
+echo -e "\033[1;37m                KALEBOX SERVER RUNNER                     \033[0m"
+echo -e "\033[1;35m==========================================================\033[0m"
+echo -e "  Frontend Web     : \033[1;36mhttp://localhost:5173\033[0m"
+echo -e "  Backend API      : \033[1;36mhttp://localhost:8000\033[0m"
+echo -e "  Login Karyawan   : \033[1;33mhttp://localhost:5173/internal/login\033[0m"
+echo -e "  Akun Owner Awal  : \033[1;32mowner@kalebox.id / password123\033[0m"
+echo -e "\033[1;35m==========================================================\033[0m"
+echo "Tekan [Ctrl+C] untuk menghentikan seluruh service."
+
+cleanup() {
+    info "Menghentikan seluruh service..."
+    kill $(jobs -p) 2>/dev/null || true
+    success "Seluruh service telah dihentikan."
+}
+trap cleanup SIGINT SIGTERM EXIT
+
+(cd backend && php artisan serve --port=8000) &
+(cd backend && php artisan queue:listen) &
+(cd backend && php artisan schedule:work) &
+(cd frontend && npm run dev -- --host) &
+
+wait
