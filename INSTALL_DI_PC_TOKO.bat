@@ -15,7 +15,7 @@ echo [*] Langkah 1: Memeriksa Alat / Bahan yang dibutuhkan...
 echo ----------------------------------------------------------------------
 
 :: Cek Git
-git --version >nul 2>&1
+where git >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] Git BELUM terpasang! Silakan install Git for Windows terlebih dahulu.
     pause
@@ -25,7 +25,7 @@ if %errorlevel% neq 0 (
 )
 
 :: Cek PHP
-php -v >nul 2>&1
+where php >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] PHP BELUM terdeteksi di Command Prompt!
     echo     Pastikan Laragon sudah berjalan atau tambahkan PHP ke PATH.
@@ -36,7 +36,7 @@ if %errorlevel% neq 0 (
 )
 
 :: Cek Composer
-composer --version >nul 2>&1
+where composer >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] Composer BELUM terdeteksi!
     pause
@@ -45,14 +45,24 @@ if %errorlevel% neq 0 (
     echo [V] Composer terpasang.
 )
 
-:: Cek Node.js & NPM
-node -v >nul 2>&1
+:: Cek Node.js
+where node >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] Node.js BELUM terpasang! Silakan install Node.js (LTS version).
     pause
     exit /b
 ) else (
     echo [V] Node.js terpasang.
+)
+
+:: Cek NPM
+where npm >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [X] NPM BELUM terpasang!
+    pause
+    exit /b
+) else (
+    echo [V] NPM terpasang.
 )
 
 echo.
@@ -70,6 +80,7 @@ echo.
 echo ======================================================================
 echo [*] Langkah 3: Menginstall Dependensi Backend (Composer Install)...
 echo ======================================================================
+echo Sedang mendownload dependensi Laravel, mohon tunggu...
 cd /d "%~dp0backend"
 call composer install --no-interaction
 if %errorlevel% neq 0 (
@@ -80,23 +91,22 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [*] Menghasilkan APP_KEY Laravel...
-php artisan key:generate
+call php artisan key:generate
 
 echo.
 echo [*] Membuat link symlink storage gambar...
-php artisan storage:link
+call php artisan storage:link
 
 echo.
 echo ======================================================================
-echo [*] Langkah 4: Membuat Database dan Menjalankan Migrasi Data Awal...
+echo [*] Langkah 4: Menjalankan Migrasi dan Seeding Database...
 echo ======================================================================
-echo Pastikan database MySQL 'kalebox' sudah dibuat di Laragon/HeidiSQL/phpMyAdmin!
-echo Menjalankan migrasi dan seeding data awal (Owner, Admin, Desain, Produk, dll)...
-php artisan migrate:fresh --seed --force
+echo Pastikan database MySQL 'kalebox' sudah dibuat di Laragon/HeidiSQL!
+call php artisan migrate:fresh --seed --force
 if %errorlevel% neq 0 (
     echo.
     echo [!] PERINGATAN: Migrasi database gagal atau database 'kalebox' belum ada.
-    echo     Buka HeidiSQL/phpMyAdmin di Laragon, buat database bernama: kalebox
+    echo     Buka HeidiSQL di Laragon, buat database bernama: kalebox
     echo     Lalu jalankan manual di folder backend: php artisan migrate --seed
 ) else (
     echo [V] Migrasi dan seeding database BERHASIL!
@@ -106,6 +116,7 @@ echo.
 echo ======================================================================
 echo [*] Langkah 5: Menginstall Dependensi Frontend Internal (NPM Install)...
 echo ======================================================================
+echo Sedang menginstall modul React (Frontend Internal), mohon tunggu...
 cd /d "%~dp0frontend-internal"
 call npm install
 if %errorlevel% neq 0 (
