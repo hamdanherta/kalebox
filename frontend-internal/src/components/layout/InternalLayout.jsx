@@ -28,6 +28,7 @@ import {
   MapPin,
   ChevronDown,
   Lock,
+  ExternalLink,
   KeyRound,
   RefreshCw,
 } from 'lucide-react';
@@ -436,6 +437,16 @@ export const InternalLayout = () => {
                 </span>
               )}
             </div>
+
+            {/* Link to Client Website */}
+            <Link
+              to="/"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#004582] bg-[#F0F6FB] hover:bg-[#DE0E86] hover:text-white rounded-[16px] transition-all shadow-2xs"
+              title="Lihat Website & Katalog Publik Klien"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Website Klien</span>
+            </Link>
 
             {/* Notification Bell */}
             <div className="relative">

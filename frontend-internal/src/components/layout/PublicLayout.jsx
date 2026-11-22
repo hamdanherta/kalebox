@@ -37,6 +37,9 @@ export const PublicLayout = () => {
             <span className="flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-[#DE0E86]" /> kontak@kalebox.id
             </span>
+            <Link to="/internal/login" className="flex items-center gap-1 text-white hover:text-[#DE0E86] font-bold underline transition-colors">
+              Portal Karyawan & Owner
+            </Link>
           </div>
         </div>
       </div>

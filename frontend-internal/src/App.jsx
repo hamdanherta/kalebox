@@ -4,14 +4,30 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
-// Layout
+// Layouts
+import PublicLayout from './components/layout/PublicLayout';
 import InternalLayout from './components/layout/InternalLayout';
+
+// Public & Client Pages
+import HomePage from './pages/public/HomePage';
+import CatalogPage from './pages/public/CatalogPage';
+import ProductDetailPage from './pages/public/ProductDetailPage';
+import OrderFormPage from './pages/public/OrderFormPage';
+import OrderTrackPage from './pages/public/OrderTrackPage';
+import HowToOrderPage from './pages/public/HowToOrderPage';
+import CareersPage from './pages/public/CareersPage';
+import MemberLoginPage from './pages/public/MemberLoginPage';
+import MemberRegisterPage from './pages/public/MemberRegisterPage';
+
+// Member Portal Pages
+import MemberOrdersPage from './pages/member/MemberOrdersPage';
+import MemberProfilePage from './pages/member/MemberProfilePage';
 
 // Internal Authentication Pages
 import InternalLoginPage from './pages/internal/InternalLoginPage';
 import InternalRegisterPage from './pages/internal/InternalRegisterPage';
 
-// Internal Pages
+// Internal Portal Pages
 import DashboardPage from './pages/internal/DashboardPage';
 import OrdersPage from './pages/internal/OrdersPage';
 import ProductsPage from './pages/internal/ProductsPage';
@@ -56,8 +72,26 @@ const ExecutiveRoute = ({ children }) => {
     );
   }
 
-  if (!['owner', 'manager'].includes(role)) {
+  if (!['owner', 'manager', 'keuangan'].includes(role)) {
     return <Navigate to="/internal/dasbor" replace />;
+  }
+
+  return children;
+};
+
+const MemberRoute = ({ children }) => {
+  const { isAuthenticated, isMember, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-10 h-10 border-4 border-[#DE0E86] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isMember) {
+    return <Navigate to="/masuk" replace />;
   }
 
   return children;
@@ -70,17 +104,46 @@ function App() {
         <ToastProvider>
           <ErrorBoundary>
             <Routes>
-              {/* Root redirect directly to internal login / dashboard */}
-              <Route path="/" element={<Navigate to="/internal/dasbor" replace />} />
-              <Route path="/login" element={<Navigate to="/internal/login" replace />} />
-              <Route path="/masuk" element={<Navigate to="/internal/login" replace />} />
-              <Route path="/daftar" element={<Navigate to="/internal/daftar" replace />} />
+              {/* 1. Public & Client Website Routes */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="katalog" element={<CatalogPage />} />
+                <Route path="katalog/:id" element={<ProductDetailPage />} />
+                <Route path="pesan" element={<OrderFormPage />} />
+                <Route path="lacak" element={<OrderTrackPage />} />
+                <Route path="pesanan/:token" element={<OrderTrackPage />} />
+                <Route path="cara-pesan" element={<HowToOrderPage />} />
+                <Route path="karir" element={<CareersPage />} />
+                <Route path="masuk" element={<MemberLoginPage />} />
+                <Route path="daftar" element={<MemberRegisterPage />} />
 
-              {/* Internal Auth */}
+                {/* Member Portal */}
+                <Route
+                  path="member/pesanan"
+                  element={
+                    <MemberRoute>
+                      <MemberOrdersPage />
+                    </MemberRoute>
+                  }
+                />
+                <Route
+                  path="member/akun"
+                  element={
+                    <MemberRoute>
+                      <MemberProfilePage />
+                    </MemberRoute>
+                  }
+                />
+              </Route>
+
+              {/* 2. Shortcuts to Internal Login/Register */}
+              <Route path="/login" element={<Navigate to="/internal/login" replace />} />
+
+              {/* 3. Internal Auth */}
               <Route path="/internal/login" element={<InternalLoginPage />} />
               <Route path="/internal/daftar" element={<InternalRegisterPage />} />
 
-              {/* Internal Protected Portal */}
+              {/* 4. Internal Protected Portal */}
               <Route
                 path="/internal"
                 element={
@@ -147,8 +210,8 @@ function App() {
                 />
               </Route>
 
-              {/* Fallback to dashboard */}
-              <Route path="*" element={<Navigate to="/internal/dasbor" replace />} />
+              {/* Fallback to Home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </ErrorBoundary>
         </ToastProvider>
