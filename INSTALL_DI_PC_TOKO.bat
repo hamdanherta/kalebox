@@ -11,10 +11,10 @@ echo.
 pause
 
 echo.
-echo [*] Langkah 1: Memeriksa Alat / Bahan yang dibutuhkan...
+echo [*] Langkah 1: Memeriksa Alat dan Bahan yang dibutuhkan...
 echo ----------------------------------------------------------------------
 
-:: Cek Git
+REM Cek Git
 where git >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] Git BELUM terpasang! Silakan install Git for Windows terlebih dahulu.
@@ -24,7 +24,7 @@ if %errorlevel% neq 0 (
     echo [V] Git terpasang.
 )
 
-:: Cek PHP
+REM Cek PHP
 where php >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] PHP BELUM terdeteksi di Command Prompt!
@@ -35,7 +35,7 @@ if %errorlevel% neq 0 (
     echo [V] PHP terpasang.
 )
 
-:: Cek Composer
+REM Cek Composer
 where composer >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] Composer BELUM terdeteksi!
@@ -45,7 +45,7 @@ if %errorlevel% neq 0 (
     echo [V] Composer terpasang.
 )
 
-:: Cek Node.js
+REM Cek NodeJS
 where node >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] Node.js BELUM terpasang! Silakan install Node.js (LTS version).
@@ -55,7 +55,7 @@ if %errorlevel% neq 0 (
     echo [V] Node.js terpasang.
 )
 
-:: Cek NPM
+REM Cek NPM
 where npm >nul 2>&1
 if %errorlevel% neq 0 (
     echo [X] NPM BELUM terpasang!
@@ -80,7 +80,7 @@ echo.
 echo ======================================================================
 echo [*] Langkah 3: Menginstall Dependensi Backend (Composer Install)...
 echo ======================================================================
-echo Sedang mendownload dependensi Laravel, mohon tunggu...
+echo Sedang mendownload dependensi Laravel, mohon tunggu beberapa menit...
 cd /d "%~dp0backend"
 call composer install --no-interaction
 if %errorlevel% neq 0 (
