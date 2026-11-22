@@ -7,6 +7,16 @@ echo           MEMULAI SERVER KALEBOX INTERNAL (TOKO PERCETAKAN)
 echo ======================================================================
 echo.
 
+REM 0. Pastikan Laragon Aktif
+tasklist /fi "imagename eq laragon.exe" 2>nul | find /i "laragon.exe" >nul
+if %errorlevel% neq 0 (
+    if exist "C:\laragon\laragon.exe" (
+        echo [*] Menyalakan Laragon secara otomatis...
+        start "" "C:\laragon\laragon.exe"
+        timeout /t 3 >nul
+    )
+)
+
 REM 1. Tampilkan IP Komputer Server ini
 echo [*] Mendeteksi IP Address Komputer Toko...
 for /f "tokens=4" %%a in ('route print 0.0.0.0 ^| findstr 0.0.0.0 ^| findstr /v "Persistent"') do (
@@ -33,7 +43,7 @@ start "Kalebox Frontend Internal (Port 5173)" cmd /k "cd /d %~dp0frontend-intern
 
 echo.
 echo [*] Membuka Dashboard Kalebox di browser default...
-timeout /t 3 >nul
+timeout /t 4 >nul
 start http://localhost:5173
 
 echo.
