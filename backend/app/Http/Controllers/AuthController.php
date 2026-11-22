@@ -65,100 +65,104 @@ class AuthController extends Controller
     }
 
     /**
-     * Pendaftaran Karyawan Internal (Membutuhkan Kode Undangan Resmi)
+     * Pendaftaran Karyawan Internal Mandiri dengan Role & Domain Email Khusus
      */
     public function registerInternal(Request $request)
     {
+        $roleDomainMap = [
+            'owner'    => ['domain' => 'ownerkalebox.id', 'label' => 'Owner', 'pos' => 'Direktur Utama / Owner', 'salary' => 250000],
+            'manager'  => ['domain' => 'managerkalebox.id', 'label' => 'Manager', 'pos' => 'Manajer Operasional', 'salary' => 180000],
+            'admin'    => ['domain' => 'adminkalebox.id', 'label' => 'Admin', 'pos' => 'Admin & Content Specialist', 'salary' => 120000],
+            'design'   => ['domain' => 'desainkalebox.id', 'label' => 'Desain', 'pos' => 'Senior Graphic Designer', 'salary' => 135000],
+            'staff'    => ['domain' => 'produksikalebox.id', 'label' => 'Produksi', 'pos' => 'Operator Mesin Cetak & QC', 'salary' => 110000],
+            'keuangan' => ['domain' => 'keuangankalebox.id', 'label' => 'Keuangan', 'pos' => 'Staff Keuangan & Kasir', 'salary' => 130000],
+        ];
+
+        $allowedRoles = array_keys($roleDomainMap);
+
         $request->validate([
-            'code' => 'required|string',
             'name' => 'required|string|max:255',
+            'role' => 'required|string|in:' . implode(',', $allowedRoles),
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'required|string|max:20',
-            'nik' => 'required|string|size:16',
-            'address' => 'required|string',
-            'domicile' => 'required|string',
-            'position_id' => 'required|exists:positions,id',
-            'employee_status_id' => 'required|exists:employee_statuses,id',
+            'password' => 'required|string|min:6|confirmed',
+            'phone' => 'nullable|string|max:20',
         ], [
-            'nik.size' => 'NIK KTP wajib terdiri dari 16 digit angka.',
-            'password.min' => 'Kata sandi minimal terdiri dari 8 karakter.',
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'role.required' => 'Pilihan Role jabatan wajib dipilih.',
+            'role.in' => 'Role yang dipilih tidak valid.',
+            'password.min' => 'Kata sandi minimal terdiri dari 6 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
-            'email.unique' => 'Alamat email ini sudah terdaftar.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email ini sudah terdaftar di sistem.',
         ]);
 
-        $regCode = RegistrationCode::with('role')
-            ->where('code', trim($request->code))
-            ->first();
+        $selectedRole = strtolower(trim($request->role));
+        $expectedDomain = $roleDomainMap[$selectedRole]['domain'];
+        $roleLabel = $roleDomainMap[$selectedRole]['label'];
 
-        if (!$regCode) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kode registrasi/undangan karyawan tidak valid.',
-            ], 422);
+        // 1. Validasi format email domain khusus role
+        $email = strtolower(trim($request->email));
+        $emailParts = explode('@', $email);
+        $domain = end($emailParts);
+
+        if ($domain !== $expectedDomain) {
+            throw ValidationException::withMessages([
+                'email' => ["Format email untuk role {$roleLabel} wajib menggunakan akhiran @{$expectedDomain} (contoh: nama@{$expectedDomain})."],
+            ]);
         }
 
-        if ($regCode->is_used) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kode registrasi ini sudah pernah digunakan.',
-            ], 422);
-        }
-
-        if ($regCode->expires_at->isPast()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kode registrasi ini telah kadaluarsa.',
-            ], 422);
-        }
-
-        $targetRole = $regCode->role;
-
-        // Validasi batas ketat Owner (1) dan Manager (1)
-        if ($targetRole->name === 'owner') {
+        // 2. Validasi batas ketat: Owner (maks 1) dan Manager (maks 1)
+        if ($selectedRole === 'owner') {
             $existingOwnerCount = User::whereHas('role', fn($q) => $q->where('name', 'owner'))->count();
             if ($existingOwnerCount >= 1) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Batas maksimal Owner (1 orang) sudah tercapai di sistem.',
+                    'message' => 'Akun Owner sudah terdaftar di sistem. Maksimal hanya diperbolehkan 1 akun Owner.',
                 ], 422);
             }
-        } elseif ($targetRole->name === 'manager') {
+        } elseif ($selectedRole === 'manager') {
             $existingManagerCount = User::whereHas('role', fn($q) => $q->where('name', 'manager'))->count();
             if ($existingManagerCount >= 1) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Batas maksimal Manager (1 orang) sudah tercapai di sistem.',
+                    'message' => 'Akun Manager sudah terdaftar di sistem. Maksimal hanya diperbolehkan 1 akun Manager.',
                 ], 422);
             }
         }
 
+        // 3. Ambil atau buat Role Model
+        $targetRole = Role::firstOrCreate(['name' => $selectedRole], [
+            'display_name' => $roleLabel,
+        ]);
+
+        // 4. Buat User
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name' => trim($request->name),
+            'email' => $email,
             'password' => Hash::make($request->password),
             'role_id' => $targetRole->id,
-            'phone' => $request->phone,
+            'phone' => $request->phone ?? '-',
             'is_active' => true,
         ]);
 
-        $employee = Employee::create([
-            'user_id' => $user->id,
-            'name' => $request->name,
-            'nik' => $request->nik,
-            'employee_id_number' => '-',
-            'address' => $request->address,
-            'domicile' => $request->domicile,
-            'position_id' => $request->position_id,
-            'employee_status_id' => $request->employee_status_id,
-            'hire_date' => Carbon::now()->toDateString(),
-            'daily_salary' => 120000,
-        ]);
+        // 5. Sambungkan ke profil Karyawan
+        $position = \App\Models\Position::where('name', 'like', "%" . explode(' ', $roleDomainMap[$selectedRole]['pos'])[0] . "%")->first()
+            ?: \App\Models\Position::first();
+        $status = \App\Models\EmployeeStatus::where('name', 'like', '%Tetap%')->first()
+            ?: \App\Models\EmployeeStatus::first();
 
-        // Tandai kode undangan sebagai terpakai
-        $regCode->update([
-            'is_used' => true,
-            'used_by' => $user->id,
+        Employee::create([
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'nik' => $request->nik ?? str_pad('1571' . date('ymd') . $user->id, 16, '0', STR_PAD_RIGHT),
+            'employee_id_number' => '-',
+            'address' => $request->address ?? 'Toko Percetakan Kalebox',
+            'domicile' => $request->domicile ?? 'Kota Jambi',
+            'position_id' => $position?->id,
+            'employee_status_id' => $status?->id,
+            'hire_date' => Carbon::now()->toDateString(),
+            'daily_salary' => $roleDomainMap[$selectedRole]['salary'],
         ]);
 
         $token = $user->createToken('kalebox_internal_token')->plainTextToken;
@@ -168,7 +172,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'status' => 'success',
-            'message' => 'Pendaftaran akun karyawan berhasil.',
+            'message' => 'Pendaftaran akun ' . $roleLabel . ' berhasil!',
             'data' => [
                 'user' => $user->load(['role', 'employee.position', 'employee.employeeStatus']),
                 'token' => $token,

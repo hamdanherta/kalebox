@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const role = (user?.role?.slug || user?.role?.name || '').toLowerCase() || null;
-  const isInternal = ['owner', 'manager', 'admin', 'design', 'staff'].includes(role);
+  const isInternal = ['owner', 'manager', 'admin', 'design', 'staff', 'keuangan'].includes(role);
   const isMember = role === 'member';
 
   useEffect(() => {

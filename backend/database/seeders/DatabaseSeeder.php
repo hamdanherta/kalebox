@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'admin', 'display_name' => 'Admin & Content Creator'],
             ['name' => 'design', 'display_name' => 'Design (Graphic Designer)'],
             ['name' => 'staff', 'display_name' => 'Staff (Produksi)'],
+            ['name' => 'keuangan', 'display_name' => 'Keuangan & Kas'],
             ['name' => 'member', 'display_name' => 'Member'],
         ];
 
@@ -49,86 +50,11 @@ class DatabaseSeeder extends Seeder
             $roleModels[$r['name']] = Role::firstOrCreate(['name' => $r['name']], $r);
         }
 
-        // 2. Akun Inti Karyawan & Member
-        $owner = User::firstOrCreate(
-            ['email' => 'owner@kalebox.id'],
-            [
-                'name' => 'Hamdani Owner',
-                'password' => Hash::make('password123'),
-                'role_id' => $roleModels['owner']->id,
-                'phone' => '6281234567890',
-                'is_active' => true,
-            ]
-        );
+        // Catatan: Seluruh akun user demo telah dikosongkan.
+        // User baru dibuat mandiri melalui halaman registrasi internal (/internal/daftar)
+        // dengan format domain email khusus role.
 
-        $manager = User::firstOrCreate(
-            ['email' => 'manager@kalebox.id'],
-            [
-                'name' => 'Ahmad Manager',
-                'password' => Hash::make('password123'),
-                'role_id' => $roleModels['manager']->id,
-                'phone' => '6281234567891',
-                'is_active' => true,
-            ]
-        );
-
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@kalebox.id'],
-            [
-                'name' => 'Rina Admin',
-                'password' => Hash::make('password123'),
-                'role_id' => $roleModels['admin']->id,
-                'phone' => '6281234567892',
-                'is_active' => true,
-            ]
-        );
-
-        $designer = User::firstOrCreate(
-            ['email' => 'design@kalebox.id'],
-            [
-                'name' => 'Bagus Desainer',
-                'password' => Hash::make('password123'),
-                'role_id' => $roleModels['design']->id,
-                'phone' => '6281234567893',
-                'is_active' => true,
-            ]
-        );
-
-        $staff = User::firstOrCreate(
-            ['email' => 'staff@kalebox.id'],
-            [
-                'name' => 'Joko Operator Cetak',
-                'password' => Hash::make('password123'),
-                'role_id' => $roleModels['staff']->id,
-                'phone' => '6281234567894',
-                'is_active' => true,
-            ]
-        );
-
-        $memberUser = User::firstOrCreate(
-            ['email' => 'member@kalebox.id'],
-            [
-                'name' => 'Siti Pelanggan Setia',
-                'password' => Hash::make('password123'),
-                'role_id' => $roleModels['member']->id,
-                'phone' => '6281234567895',
-                'is_active' => true,
-            ]
-        );
-
-        Member::firstOrCreate(
-            ['member_no' => 'KLB-000001'],
-            [
-                'user_id' => $memberUser->id,
-                'name' => $memberUser->name,
-                'address' => 'Jl. Pattimura No. 45, Telanaipura, Jambi',
-                'phone' => $memberUser->phone,
-                'email' => $memberUser->email,
-                'discount_percent' => 5.00,
-            ]
-        );
-
-        // 3. Divisi & Posisi Karyawan
+        // 2. Divisi & Posisi Karyawan
         $divManajemen = Division::firstOrCreate(['name' => 'Manajemen']);
         $divDesain    = Division::firstOrCreate(['name' => 'Desain & Kreatif']);
         $divProduksi  = Division::firstOrCreate(['name' => 'Produksi & Finishing']);
@@ -138,8 +64,9 @@ class DatabaseSeeder extends Seeder
         $posAdmin    = Position::firstOrCreate(['name' => 'Admin & Content Specialist', 'division_id' => $divDesain->id]);
         $posDesign   = Position::firstOrCreate(['name' => 'Senior Graphic Designer', 'division_id' => $divDesain->id]);
         $posStaff    = Position::firstOrCreate(['name' => 'Operator Mesin Cetak & QC', 'division_id' => $divProduksi->id]);
+        $posKeuangan = Position::firstOrCreate(['name' => 'Staff Keuangan & Kasir', 'division_id' => $divManajemen->id]);
 
-        // 4. Status Karyawan
+        // 3. Status Karyawan
         $stTetap = EmployeeStatus::firstOrCreate(['name' => 'Karyawan Tetap', 'duration_type' => 'Selamanya']);
         $stKontrak = EmployeeStatus::firstOrCreate([
             'name' => 'Kontrak 1 Tahun',
@@ -147,75 +74,7 @@ class DatabaseSeeder extends Seeder
             'valid_until' => Carbon::now()->addYear()->toDateString(),
         ]);
 
-        // 5. Data Karyawan
-        $employeesData = [
-            [
-                'user_id' => $owner->id,
-                'name' => $owner->name,
-                'nik' => '1571012304850001',
-                'address' => 'Jl. Kapten Pattimura No. 12, Kota Jambi',
-                'domicile' => 'Kota Jambi',
-                'position_id' => $posOwner->id,
-                'employee_status_id' => $stTetap->id,
-                'hire_date' => Carbon::now()->subYears(3)->toDateString(),
-                'employee_id_number' => 'NIK-2023-0001',
-                'daily_salary' => 250000,
-            ],
-            [
-                'user_id' => $manager->id,
-                'name' => $manager->name,
-                'nik' => '1571021405900002',
-                'address' => 'Jl. Kolonel Abunjani No. 34, Kota Jambi',
-                'domicile' => 'Kota Jambi',
-                'position_id' => $posManager->id,
-                'employee_status_id' => $stTetap->id,
-                'hire_date' => Carbon::now()->subYears(2)->toDateString(),
-                'employee_id_number' => 'NIK-2024-0002',
-                'daily_salary' => 180000,
-            ],
-            [
-                'user_id' => $admin->id,
-                'name' => $admin->name,
-                'nik' => '1571032506950003',
-                'address' => 'Jl. Sultan Thaha No. 56, Kota Jambi',
-                'domicile' => 'Kota Jambi',
-                'position_id' => $posAdmin->id,
-                'employee_status_id' => $stTetap->id,
-                'hire_date' => Carbon::now()->subMonths(8)->toDateString(),
-                'employee_id_number' => '-', // Masih < 1 tahun, berhak NIK setelah 1 tahun
-                'daily_salary' => 120000,
-            ],
-            [
-                'user_id' => $designer->id,
-                'name' => $designer->name,
-                'nik' => '1571041207960004',
-                'address' => 'Jl. Mayjen Sutoyo No. 78, Kota Jambi',
-                'domicile' => 'Kota Jambi',
-                'position_id' => $posDesign->id,
-                'employee_status_id' => $stTetap->id,
-                'hire_date' => Carbon::now()->subMonths(14)->toDateString(),
-                'employee_id_number' => 'NIK-2025-0004',
-                'daily_salary' => 135000,
-            ],
-            [
-                'user_id' => $staff->id,
-                'name' => $staff->name,
-                'nik' => '1571050808940005',
-                'address' => 'Jl. Raden Mattaher No. 90, Kota Jambi',
-                'domicile' => 'Kota Jambi',
-                'position_id' => $posStaff->id,
-                'employee_status_id' => $stKontrak->id,
-                'hire_date' => Carbon::now()->subMonths(5)->toDateString(),
-                'employee_id_number' => '-',
-                'daily_salary' => 110000,
-            ],
-        ];
-
-        foreach ($employeesData as $emp) {
-            Employee::firstOrCreate(['user_id' => $emp['user_id']], $emp);
-        }
-
-        // 6. Waktu Kerja
+        // 4. Waktu Kerja
         WorkSchedule::firstOrCreate(
             ['name' => 'Jadwal Standar Percetakan'],
             [
@@ -409,35 +268,15 @@ class DatabaseSeeder extends Seeder
             ['amount' => 250000.00, 'description' => 'Insentif lembur cepat untuk pesanan klien berlabel Prioritas Tinggi.']
         );
 
-        // 15. Kode Undangan Karyawan Contoh (Sekali Pakai)
-        RegistrationCode::firstOrCreate(
-            ['code' => 'KALEBOX-DES-2026'],
-            [
-                'role_id' => $roleModels['design']->id,
-                'created_by' => $owner->id,
-                'is_used' => false,
-                'expires_at' => Carbon::now()->addMonths(3),
-            ]
-        );
-        RegistrationCode::firstOrCreate(
-            ['code' => 'KALEBOX-STAFF-2026'],
-            [
-                'role_id' => $roleModels['staff']->id,
-                'created_by' => $owner->id,
-                'is_used' => false,
-                'expires_at' => Carbon::now()->addMonths(3),
-            ]
-        );
-
-        // 16. Klien Contoh
+        // 15. Klien Contoh
         $client1 = Client::firstOrCreate(
             ['client_code' => 'CLN-00001'],
             [
                 'name' => 'Roti Bakar Juara 88',
                 'phone' => '6281234567895',
-                'email' => 'member@kalebox.id',
+                'email' => 'klien@rotibakar88.com',
                 'client_type' => 'Lama',
-                'is_member' => true,
+                'is_member' => false,
                 'notes' => 'Pelanggan rutin box roti bakar 1.000 pcs per bulan.',
             ]
         );

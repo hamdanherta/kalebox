@@ -272,8 +272,8 @@ export const InternalLayout = () => {
   const canManageProducts = ['owner', 'manager', 'admin'].includes(role);
   const canManagePartners = ['owner', 'manager', 'admin'].includes(role);
   const canManageEmployees = ['owner', 'manager'].includes(role);
-  const canManagePayroll = ['owner', 'manager'].includes(role);
-  const canManageFinance = ['owner', 'manager'].includes(role);
+  const canManagePayroll = ['owner', 'manager', 'keuangan'].includes(role);
+  const canManageFinance = ['owner', 'manager', 'keuangan'].includes(role);
   const canManageCareers = ['owner', 'manager'].includes(role);
   const canManageSettings = ['owner', 'manager'].includes(role);
 
@@ -301,6 +301,7 @@ export const InternalLayout = () => {
     admin: 'Admin Kantor',
     design: 'Desainer Grafis',
     staff: 'Staff Produksi',
+    keuangan: 'Staff Keuangan & Kasir',
   };
 
   return (

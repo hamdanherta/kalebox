@@ -32,12 +32,6 @@ export const InternalLoginPage = () => {
     }
   };
 
-  // Quick fill helper for testing
-  const handleQuickFill = (roleEmail) => {
-    setEmail(roleEmail);
-    setPassword('password123');
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full space-y-6">
@@ -103,54 +97,10 @@ export const InternalLoginPage = () => {
             </Button>
           </form>
 
-          {/* Quick Credentials Helper for Verification */}
-          <div className="pt-4 border-t border-slate-100 space-y-2">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">
-              Akses Cepat Akun Demo (Password: password123)
-            </p>
-            <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('owner@kalebox.id')}
-                className="py-1 px-2 rounded-[12px] bg-[#F0F6FB] hover:bg-[#DE0E86] hover:text-white text-[#004582] font-bold transition-all text-center"
-              >
-                Owner
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('manager@kalebox.id')}
-                className="py-1 px-2 rounded-[12px] bg-[#F0F6FB] hover:bg-[#DE0E86] hover:text-white text-[#004582] font-bold transition-all text-center"
-              >
-                Manager
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin@kalebox.id')}
-                className="py-1 px-2 rounded-[12px] bg-[#F0F6FB] hover:bg-[#DE0E86] hover:text-white text-[#004582] font-bold transition-all text-center"
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('design@kalebox.id')}
-                className="py-1 px-2 rounded-[12px] bg-[#F0F6FB] hover:bg-[#DE0E86] hover:text-white text-[#004582] font-bold transition-all text-center"
-              >
-                Desain
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('staff@kalebox.id')}
-                className="py-1 px-2 rounded-[12px] bg-[#F0F6FB] hover:bg-[#DE0E86] hover:text-white text-[#004582] font-bold transition-all text-center col-span-2"
-              >
-                Staff Produksi
-              </button>
-            </div>
-          </div>
-
-          <div className="pt-2 text-center text-xs text-slate-500 font-medium">
-            Karyawan baru?{' '}
+          <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500 font-medium">
+            Karyawan baru atau ingin buat akun?{' '}
             <Link to="/internal/daftar" className="text-[#DE0E86] font-bold hover:underline">
-              Aktivasi dengan Kode Undangan
+              Daftar Akun Baru
             </Link>
           </div>
         </Card>

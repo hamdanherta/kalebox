@@ -2,22 +2,27 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import api from '../../services/api';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Badge from '../../components/common/Badge';
-import { KeyRound, Mail, Lock, User, Phone, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Phone, CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
+
+const ROLES = [
+  { id: 'owner', label: 'Owner (Pemilik Toko)', domain: 'ownerkalebox.id', maxNote: 'Maksimal 1 Akun' },
+  { id: 'manager', label: 'Manager (Manajer Operasional)', domain: 'managerkalebox.id', maxNote: 'Maksimal 1 Akun' },
+  { id: 'admin', label: 'Admin (Admin & Konten)', domain: 'adminkalebox.id' },
+  { id: 'design', label: 'Desain (Graphic Designer)', domain: 'desainkalebox.id' },
+  { id: 'staff', label: 'Produksi (Operator Mesin & QC)', domain: 'produksikalebox.id' },
+  { id: 'keuangan', label: 'Keuangan (Kasir & Keuangan)', domain: 'keuangankalebox.id' },
+];
 
 export const InternalRegisterPage = () => {
   const { registerInternal } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  const [invitationCode, setInvitationCode] = useState('');
-  const [verifiedData, setVerifiedData] = useState(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-
+  const [role, setRole] = useState('owner');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -25,50 +30,44 @@ export const InternalRegisterPage = () => {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
-    if (!invitationCode.trim()) return;
-
-    setIsVerifying(true);
-    try {
-      const res = await api.post('/auth/internal/verify-invitation', {
-        invitation_code: invitationCode.trim(),
-      });
-
-      if (res.data?.status === 'success') {
-        setVerifiedData(res.data.data);
-        addToast('Kode undangan valid! Silakan lengkapi biodata Anda.', 'success');
-      }
-    } catch (err) {
-      addToast(err.response?.data?.message || 'Kode undangan tidak valid atau sudah kadaluarsa', 'error');
-      setVerifiedData(null);
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+  const selectedRoleInfo = ROLES.find((r) => r.id === role) || ROLES[0];
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    // Client side domain check
+    const expectedDomain = selectedRoleInfo.domain;
+    const emailLower = email.toLowerCase().trim();
+    if (!emailLower.endsWith(`@${expectedDomain}`)) {
+      addToast(`Format email untuk role ${selectedRoleInfo.label} wajib berakhiran @${expectedDomain} (contoh: nama@${expectedDomain})`, 'warning');
+      return;
+    }
+
     if (password !== passwordConfirmation) {
       addToast('Konfirmasi kata sandi tidak cocok', 'warning');
+      return;
+    }
+
+    if (password.length < 6) {
+      addToast('Kata sandi minimal 6 karakter', 'warning');
       return;
     }
 
     setIsRegistering(true);
     try {
       const user = await registerInternal({
-        invitation_code: invitationCode.trim(),
         name,
-        email,
+        role,
+        email: emailLower,
         phone,
         password,
         password_confirmation: passwordConfirmation,
       });
 
-      addToast(`Aktivasi akun berhasil! Selamat datang, ${user.name}.`, 'success');
+      addToast(`Pendaftaran akun ${selectedRoleInfo.label} berhasil! Selamat datang, ${user.name}.`, 'success');
       navigate('/internal/dasbor');
     } catch (err) {
-      addToast(err.message || 'Registrasi gagal', 'error');
+      addToast(err.message || 'Pendaftaran gagal.', 'error');
     } finally {
       setIsRegistering(false);
     }
@@ -83,127 +82,116 @@ export const InternalRegisterPage = () => {
           </Link>
           <div className="pt-2">
             <Badge variant="primary" size="sm" className="uppercase font-bold tracking-wider">
-              Aktivasi Karyawan Baru
+              Registrasi Akun Karyawan
             </Badge>
           </div>
           <h1 className="text-2xl font-extrabold text-[#004582] tracking-tight">
-            Pendaftaran Internal Kalebox
+            Buat Akun Internal Baru
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Masukkan kode undangan resmi yang diterbitkan oleh manajemen untuk melanjutkan.
+            Pilih role jabatan Anda dan gunakan format email khusus sesuai role.
           </p>
         </div>
 
         <Card padding="p-8" className="space-y-6">
-          {!verifiedData ? (
-            <form onSubmit={handleVerifyCode} className="space-y-4">
-              <Input
-                label="Kode Undangan Resmi"
-                required
-                value={invitationCode}
-                onChange={(e) => setInvitationCode(e.target.value.toUpperCase())}
-                placeholder="Contoh: KALE-XXXX-XXXX"
-                icon={KeyRound}
-                helperText="Hubungi Manajer Operasional jika belum memiliki kode undangan."
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                isLoading={isVerifying}
-                icon={ArrowRight}
-                iconPosition="right"
+          <form onSubmit={handleRegister} className="space-y-4">
+            {/* Pilihan Role */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">
+                Pilih Role / Jabatan <span className="text-[#DE0E86]">*</span>
+              </label>
+              <select
+                value={role}
+                onChange={(e) => {
+                  setRole(e.target.value);
+                  setEmail('');
+                }}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-[16px] text-sm font-semibold text-[#004582] focus:outline-none focus:ring-2 focus:ring-[#004582]/20 focus:border-[#004582] transition-colors"
               >
-                Verifikasi Kode Undangan
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
-              {/* Verified Code Info */}
-              <div className="bg-emerald-50 text-emerald-900 p-4 rounded-[20px] text-xs space-y-1">
-                <div className="flex items-center gap-1.5 font-bold text-emerald-800">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Kode Undangan Terverifikasi</span>
-                </div>
-                <p>
-                  Posisi Ditugaskan: <strong>{verifiedData.role?.name || 'Karyawan'}</strong>
-                  {verifiedData.division && ` • Divisi ${verifiedData.division.name}`}
-                </p>
-              </div>
+                {ROLES.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.label} {r.maxNote ? `[${r.maxNote}]` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              <Input
-                label="Nama Lengkap"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nama sesuai KTP"
-                icon={User}
-              />
+            <Input
+              label="Nama Lengkap"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Contoh: Hamdani"
+              icon={User}
+            />
 
+            <div>
               <Input
-                label="Alamat Email Perusahaan / Pribadi"
+                label="Alamat Email Khusus Role"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@email.com"
+                placeholder={`nama@${selectedRoleInfo.domain}`}
                 icon={Mail}
               />
+              <div className="mt-1.5 p-2.5 rounded-[12px] bg-sky-50 border border-sky-100 text-[11px] text-[#004582] space-y-0.5">
+                <div>
+                  Format wajib:{' '}
+                  <strong className="text-[#DE0E86] font-mono">
+                    nama@{selectedRoleInfo.domain}
+                  </strong>
+                </div>
+                {selectedRoleInfo.maxNote && (
+                  <div className="text-amber-700 font-semibold">
+                    * Perhatian: Role ini {selectedRoleInfo.maxNote.toLowerCase()}.
+                  </div>
+                )}
+              </div>
+            </div>
 
-              <Input
-                label="Nomor WhatsApp"
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="08123456789"
-                icon={Phone}
-              />
+            <Input
+              label="Nomor WhatsApp / HP"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="08123456789"
+              icon={Phone}
+            />
 
-              <Input
-                label="Kata Sandi Baru"
-                type="password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min. 8 karakter"
-                icon={Lock}
-              />
+            <Input
+              label="Kata Sandi Baru"
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Min. 6 karakter"
+              icon={Lock}
+            />
 
-              <Input
-                label="Konfirmasi Sandi Baru"
-                type="password"
-                required
-                minLength={8}
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                placeholder="Ulangi sandi"
-                icon={Lock}
-              />
+            <Input
+              label="Konfirmasi Kata Sandi"
+              type="password"
+              required
+              minLength={6}
+              value={passwordConfirmation}
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              placeholder="Ulangi kata sandi"
+              icon={Lock}
+            />
 
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full mt-2"
-                isLoading={isRegistering}
-                icon={CheckCircle2}
-              >
-                Selesaikan Aktivasi Akun
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setVerifiedData(null)}
-                className="w-full text-center text-xs text-slate-400 hover:text-slate-600 font-medium pt-2"
-              >
-                Gunakan kode undangan lain
-              </button>
-            </form>
-          )}
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full mt-2"
+              isLoading={isRegistering}
+              icon={CheckCircle2}
+            >
+              Daftar Akun Baru
+            </Button>
+          </form>
 
           <div className="pt-2 text-center text-xs text-slate-500 font-medium">
             Sudah memiliki akun?{' '}
