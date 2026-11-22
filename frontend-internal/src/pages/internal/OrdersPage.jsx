@@ -444,7 +444,7 @@ export const OrdersPage = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* View mode toggle */}
           <div className="bg-[#F0F6FB] p-1 rounded-[16px] flex items-center">
             <button

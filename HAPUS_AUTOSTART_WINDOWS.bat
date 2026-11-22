@@ -18,3 +18,4 @@ if exist "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\KaleboxServer.
 )
 echo.
 pause
+

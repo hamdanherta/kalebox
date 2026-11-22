@@ -754,7 +754,7 @@ export const ContentsPage = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {activeTab === 'contents' ? (
             <Button
               variant="primary"
@@ -1225,7 +1225,7 @@ export const ContentsPage = () => {
                   <tr key={p.id} className="hover:bg-[#F0F6FB]/50 transition-colors">
                     {/* Platform Name & Logo */}
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <div className="w-10 h-10 rounded-[14px] bg-slate-50 border border-slate-200/80 p-1.5 flex items-center justify-center flex-shrink-0 shadow-2xs">
                           {logoSrc ? (
                             <img

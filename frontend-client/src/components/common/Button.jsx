@@ -24,9 +24,9 @@ export const Button = ({
   };
 
   const sizeStyles = {
-    sm: 'text-xs font-semibold px-4 py-2 rounded-[16px] gap-1.5',
-    md: 'text-sm font-semibold px-6 py-3 rounded-[20px] gap-2',
-    lg: 'text-base font-bold px-8 py-3.5 rounded-[24px] gap-2.5',
+    sm: 'text-xs font-semibold px-3.5 py-2 rounded-[14px] gap-1.5 h-9 max-h-9',
+    md: 'text-sm font-semibold px-5 py-2.5 rounded-[18px] gap-2 h-11 max-h-11',
+    lg: 'text-base font-bold px-7 py-3 rounded-[22px] gap-2.5 h-13 max-h-13',
   };
 
   return (
@@ -35,7 +35,7 @@ export const Button = ({
       disabled={disabled || isLoading}
       onClick={onClick}
       className={cn(
-        'inline-flex items-center justify-center font-sans tracking-tight transition-all duration-200 select-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
+        'inline-flex items-center justify-center font-sans tracking-tight transition-all duration-200 select-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap shrink-0 leading-none overflow-hidden text-ellipsis',
         variantStyles[variant] || variantStyles.primary,
         sizeStyles[size] || sizeStyles.md,
         className
@@ -44,14 +44,14 @@ export const Button = ({
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Memproses...</span>
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+          <span className="whitespace-nowrap">Memproses...</span>
         </>
       ) : (
         <>
-          {Icon && iconPosition === 'left' && <Icon className="w-4 h-4 flex-shrink-0" />}
-          <span>{children}</span>
-          {Icon && iconPosition === 'right' && <Icon className="w-4 h-4 flex-shrink-0" />}
+          {Icon && iconPosition === 'left' && <Icon className="w-4 h-4 shrink-0" />}
+          <span className="whitespace-nowrap truncate max-w-full leading-none">{children}</span>
+          {Icon && iconPosition === 'right' && <Icon className="w-4 h-4 shrink-0" />}
         </>
       )}
     </button>

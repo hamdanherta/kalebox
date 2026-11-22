@@ -31,3 +31,4 @@ echo untuk mendaftarkan akun Owner pertama Anda!
 echo ======================================================================
 echo.
 pause
+

@@ -72,3 +72,37 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
+
+/* ==========================================================================
+   ATURAN TOMBOL: TINGGI TETAP (TIDAK BERTAMBAH) & SUSUNAN FLEX-WRAP KE BAWAH
+   ========================================================================== */
+button,
+.btn,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  word-break: keep-all !important;
+  vertical-align: middle;
+}
+
+button span,
+.btn span {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+/* Otomatis susun ke bawah (flex-wrap) untuk semua container yang memuat tombol */
+.flex:has(> button),
+.flex:has(> .btn),
+.flex:has(> [role="button"]),
+.inline-flex:has(> button),
+.inline-flex:has(> .btn),
+.inline-flex:has(> [role="button"]),
+[class*="gap-"]:has(> button),
+.button-group,
+.actions-group {
+  flex-wrap: wrap !important;
+}
