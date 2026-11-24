@@ -22,14 +22,18 @@ echo [*] Mendeteksi IP Address Komputer Toko...
 for /f "tokens=4" %%a in ('route print 0.0.0.0 ^| findstr 0.0.0.0 ^| findstr /v "Persistent"') do (
     set LOCAL_IP=%%a
 )
-echo     IP Komputer Server Toko: %LOCAL_IP%
+if "%LOCAL_IP%"=="" set LOCAL_IP=192.168.1.50
+echo     IP Komputer Server Toko: %LOCAL_IP% (IP Permanen: 192.168.1.50)
 echo.
 echo ======================================================================
-echo   KOMPUTER INI:
+echo   KOMPUTER INI (PC TOKO):
 echo   Buka Browser: http://localhost:5173
 echo.
-echo   PC LAIN / HP DI TOKO (Kabel LAN / WiFi yang sama):
-echo   Buka Browser: http://%LOCAL_IP%:5173
+echo   PC LAIN / HP / LAPTOP DI TOKO (Kabel LAN / WiFi yang sama):
+echo   Buka Browser: http://192.168.1.50:5173
+echo.
+echo   PENYIMPANAN FOLDER JARINGAN (MAP NETWORK DRIVE):
+echo   Alamat Drive: \\KALEBOX-PC  atau  \\192.168.1.50
 echo ======================================================================
 echo.
 

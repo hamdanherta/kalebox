@@ -44,7 +44,7 @@ cd frontend-internal
 npm install
 npm run dev
 ```
-Akses di browser: `http://localhost:5173` atau `http://<IP_KOMPUTER_TOKO>:5173`.
+Akses di browser: `http://localhost:5173` atau `http://192.168.1.50:5173`.
 
 #### C. Frontend Klien (Website Pembeli)
 ```bash

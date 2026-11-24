@@ -27,6 +27,8 @@ echo Database Anda sekarang sudah bersih dari akun demo/lama.
 echo.
 echo Silakan buka browser ke:
 echo http://localhost:5173/internal/daftar
+echo Atau dari HP / Laptop lain lewat WiFi:
+echo http://192.168.1.50:5173/internal/daftar
 echo untuk mendaftarkan akun Owner pertama Anda!
 echo ======================================================================
 echo.
